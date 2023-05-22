@@ -6,7 +6,8 @@
 #              the network nodes are spatial joined with the TAZ, then the spatil join in used to update the TAZID in the network nodes shapefile.
 
 # Requires: ArcGIS 10.2 Desktop Basic
-# run in cmd in this folder: C:\Python27\ArcGIS10.6\python 01_Update_HOT_arcpy.py
+#
+# open cmd in this folder and run this command: C:\Python27\ArcGIS10.6\python 01_Update_HOT_arcpy.py
 
 # Import arcpy module
 print "\nRunning Update HOTzone Python Script\n\n\n" 
