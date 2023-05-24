@@ -12,6 +12,7 @@
 # Description: We updated the script to use geopandas opposed to using the arcpy library.
 #
 # open cmd in this folder and run this command: C:\Users\cday\Anaconda3\python.exe 01_Update_HOT_gpd.py
+#C:\Users\cday\AppData\Local\ESRI\conda\envs\arcgispro-py3-geopandas\python.exe 01_Update_HOT_gpd.py
 
 # Import geopandas module
 print("\nRunning Update HOTzone Python Script\n\n\n")
@@ -66,20 +67,6 @@ out_node2         = os.path.join(temp_folder, "C1_Node_HOT.shp")
 out_link_mp       = os.path.join(temp_folder, "C1_Link_Midponts.shp")
 
 # Codeblock to calculate HOTzone
-
-fill_node_t = """def calctollzoneID(tazid, node, global_n):
-  if node <= int(global_n):
-    return 0
-  else:
-    return tazid """
-
-fill_link_t = """def calctollzoneID(tazid, aField, bField, global_n):
-    return tazid """
-
-
-# Geoprocessing steps
-
-
 def calctollzoneID_Node(tazid, node, global_n):
     if node <= int(global_n):
         return 0
@@ -88,6 +75,7 @@ def calctollzoneID_Node(tazid, node, global_n):
 def calctollzoneID_Link(tazid, aField, bField, global_n):
     return tazid
 
+# Geoprocessing steps
 def TagLinksWithtollzoneID():
     print("\n\nImporting Highway Link data...")
     gdf_link = gpd.read_file(link_shp)
@@ -104,44 +92,38 @@ def TagLinksWithtollzoneID():
 
     print("\nSpatial joining Tollz_shp to Link midpoints (this may take a few minutes)...")
     gdf_tollz = gpd.read_file(tollz_shp)
-    gdf_link_taz_sj = gpd.sjoin(gdf_midpoints, gdf_tollz, how="inner", op="within")
-    gdf_link_taz_sj.to_file(link_taz_sj)
+    gdf_link_taz_sj = gpd.sjoin(gdf_midpoints, gdf_tollz, how="left", op="within")
 
     print("\nUpdating Highway Link HOTZONE ID...\n")
-    gdf_link_mp = gdf_link #gpd.GeoDataFrame.from_file(out_link2)
-    gdf_link_taz_sj = gdf_link_taz_sj[['LINKID',
-       'OBJECTID', 'Name', 'EL_Zone', 'Shape_Leng', 'Shape_Area']]
-    gdf_link_mp = gdf_link_mp.merge(gdf_link_taz_sj, on="LINKID", how = 'left')
-    gdf_link_mp = gdf_link_mp.fillna(0)
-    print(gdf_link_mp)
-
-    gdf_link_mp["HOT_ZONEID"] = gdf_link_mp.apply(lambda row: calctollzoneID_Link(row["EL_Zone"], row["A"], row["B"], UsedZones), axis=1) # taking four inputs instead of 3?
-    gdf_link_mp.to_file("temp_gpd/LinkMP_TV")
+    # it seems like this creates a Link_TAZ_SJ_deleteTemp file that is different from arcpy 
+    # (if I skip this step however, it is the same as the arcpy version. why is that?)
+    gdf_link_taz_sj["HOT_ZONEID"] = gdf_link_taz_sj.apply(lambda row: calctollzoneID_Link(row["EL_Zone"], row["A"], row["B"], UsedZones), axis=1) 
+    gdf_link_taz_sj = gdf_link_taz_sj
+    gdf_link_taz_sj.to_file(link_taz_sj)
 
 
 
-#def TagNodesWithTollzoneID() :
-#    print "\n\nImporting Highway Node data for joining toll zone purpose.."
-#    arcpy.CopyFeatures_management(node_shp, out_node2)
-#    print "\nSpatial joining Tollzone shape to Highway Nodes (this may take a few minutes)..."
-#    arcpy.SpatialJoin_analysis(out_node2, tollz_shp, node_taz_sj, "JOIN_ONE_TO_ONE", "", "", "WITHIN", "", "")
-#    arcpy.MakeTableView_management(out_node2, "Node_TV")
-#    arcpy.AddJoin_management("Node_TV", "N", node_taz_sj, "N")
-#    basename = arcpy.Describe("Node_TV").basename
-#    joinbase = arcpy.Describe(node_taz_sj).basename
-#    print "\nUpdating Highway Node TollzoneID...\n"
-#    arcpy.CalculateField_management("Node_TV", "HOT_ZONEID","calctollzoneID(!"+joinbase+".EL_Zone!,!"+basename+".N!,"+str(UsedZones)+")", "PYTHON_9.3", fill_node_t)
-#    arcpy.Delete_management("Node_TV")
-    
+def TagNodesWithTollzoneID() :
+    print("\n\nImporting Highway Node data for joining toll zone purpose..")
+    gdf_node = gpd.read_file(node_shp)
+
+    print("\nSpatial joining Tollzone shape to Highway Nodes (this may take a few minutes)...")
+    gdf_tollz = gpd.read_file(tollz_shp)
+    gdf_node_tollz = gpd.sjoin(gdf_node, gdf_tollz, how="left", op="within")
+
+    print("\nUpdating Highway Node TollzoneID...\n")
+    gdf_node_taz_sj = gdf_node_tollz
+    gdf_node_taz_sj["HOT_ZONEID"] = gdf_node_taz_sj.apply(lambda row: calctollzoneID_Node(row["EL_Zone"], row["N"], UsedZones), axis=1) 
+    gdf_node_taz_sj.to_file(node_taz_sj)
 
 
 def Main():
     try:
-        print ("\n\nRunning script...")
-        print ("Start Time: " + time.strftime('%X %x %Z')+"\n")
+        print("\n\nRunning script...")
+        print("Start Time: " + time.strftime('%X %x %Z')+"\n")
         TagLinksWithtollzoneID()
-        #TagNodesWithTollzoneID()        
-        print ("Script End Time: " + time.strftime('%X %x %Z'))
+        TagNodesWithTollzoneID()        
+        print("Script End Time: " + time.strftime('%X %x %Z'))
         logFile.write("All Finished"+"\n")
         logFile.write("Script End Time: " + time.strftime('%X %x %Z'))
         logFile.close()

@@ -92,15 +92,18 @@ def TagLinksWithtollzoneID():
     arcpy.CalculateField_management(out_link2, "X_MID", "!shape!.positionAlongLine(0.5, True).firstPoint.X", "PYTHON_9.3", "")
     arcpy.CalculateField_management(out_link2, "Y_MID", "!shape!.positionAlongLine(0.5, True).firstPoint.Y", "PYTHON_9.3", "")
     spatialRef = arcpy.Describe(out_link2).spatialReference
+    
     print "\nMaking new point shapefile from Highway Link midpoint..."
     arcpy.MakeXYEventLayer_management(out_link2, "X_MID", "Y_MID", "MidPoints", spatialRef)
     arcpy.Select_analysis("MidPoints", out_link_mp)
+    
     print "\nSpatial joining Tollz_shp to Link midpoints (this may take a few minutes)..."
     arcpy.SpatialJoin_analysis(out_link_mp, tollz_shp, link_taz_sj, "JOIN_ONE_TO_ONE", "", "", "WITHIN", "", "")
     arcpy.MakeTableView_management(out_link2, "LinkMP_TV")
     arcpy.AddJoin_management("LinkMP_TV", "LINKID", link_taz_sj, "LINKID")
     basename = arcpy.Describe("LinkMP_TV").basename
     joinbase = arcpy.Describe(link_taz_sj).basename
+    
     print "\nUpdating Highway Link HOTZONE ID...\n"
     arcpy.CalculateField_management("LinkMP_TV", "HOT_ZONEID","calctollzoneID(!"+joinbase+".EL_Zone!,!"+basename+".A!,!"+basename+".B!,"+str(UsedZones)+")", "PYTHON_9.3", fill_link_t)
     arcpy.Delete_management("Midpoints")
@@ -128,7 +131,7 @@ def Main():
         print "\n\nRunning script..."
         print "Start Time: " + time.strftime('%X %x %Z')+"\n"
         TagLinksWithtollzoneID()
-        #TagNodesWithTollzoneID()        
+        TagNodesWithTollzoneID()        
         print "Script End Time: " + time.strftime('%X %x %Z')
         logFile.write("All Finished"+"\n")
         logFile.write("Script End Time: " + time.strftime('%X %x %Z'))
