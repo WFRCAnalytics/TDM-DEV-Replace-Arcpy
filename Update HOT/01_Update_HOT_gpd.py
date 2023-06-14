@@ -69,9 +69,11 @@ out_link_mp      = os.path.join(temp_folder, "C1_Link_Midponts.shp")
 
 # Define Functions ------------------------------------------------------------------------------------
 # Codeblock to calculate HOTzone node value
-def calctollzoneID_Node(tazid, node, global_n):
-    if node <= int(global_n):
-        return 0
+def calcTAZID_Link(tazid, aField, bField, global_n):
+    if int(aField) <= int(global_n):
+        return aField
+    elif int(bField) <= int(global_n):
+        return bField
     else:
         return tazid
     
