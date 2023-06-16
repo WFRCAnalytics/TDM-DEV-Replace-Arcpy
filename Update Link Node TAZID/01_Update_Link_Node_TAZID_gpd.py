@@ -65,11 +65,19 @@ out_node          = os.path.join(temp_folder, "C1_Node_TAZID.shp")
 out_link_mp       = os.path.join(temp_folder, "C1_Link_Midponts.shp")
 
 # Codeblock to calculate TAZID
-fill_node = """def calcTAZID(tazid, node, global_n):
+def calcTAZID_Node(tazid, node, global_n):
   if node <= int(global_n):
     return node
   else:
-    return tazid """
+    return tazid
+  
+def calcTAZID_Link(tazid, aField, bField, global_n):
+    if int(aField) <= int(global_n):
+        return aField
+    elif int(bField) <= int(global_n):
+        return bField
+    else:
+        return tazid
 
     
 def find_nearest_polygon(point_gdf, polygon_gdf,buffer_distance):
@@ -100,14 +108,6 @@ def find_nearest_polygon(point_gdf, polygon_gdf,buffer_distance):
     
     point_gdf2['nearest_tazid'] = nearest_tazid
     return point_gdf2
-
-def calcTAZID_Link(tazid, aField, bField, global_n):
-    if int(aField) <= int(global_n):
-        return aField
-    elif int(bField) <= int(global_n):
-        return bField
-    else:
-        return tazid
 
 # Geoprocessing steps
 def TagLinksWithTAZID():
@@ -155,19 +155,25 @@ def TagLinksWithTAZID():
     gdf_link_mp = gdf_link_mp.drop(columns=drop_columns).drop(columns={'nearest_tazid','TAZID_1'})
     gdf_link_mp.to_file(out_link)
 
+def TagNodesWithTAZID():
+    print("\n\nImporting Highway Node data...")
+    gdf_nodes = gpd.read_file(node_shp)
 
-#def TagNodesWithTAZID():
-#    print("\n\nImporting Highway Node data...")
-#    arcpy.CopyFeatures_management(node_shp, out_node)
-#    print("\nSpatial joining TAZ to Highway Nodes (this may take a few minutes)...")
-#    arcpy.SpatialJoin_analysis(out_node, taz_shp, node_taz_sj, "JOIN_ONE_TO_ONE", "", "", "CLOSEST", "", "")
-#    arcpy.MakeTableView_management(out_node, "Node_TV")
-#    arcpy.AddJoin_management("Node_TV", "N", node_taz_sj, "N")
-#    basename = arcpy.Describe("Node_TV").basename
-#    joinbase = arcpy.Describe(node_taz_sj).basename
-#    print("\nUpdating Highway Node TAZID...\n")
-#    arcpy.CalculateField_management("Node_TV", "TAZID","calcTAZID(!"+joinbase+".TAZID_1!,!"+basename+".N!,"+str(UsedZones)+")", "PYTHON_9.3", fill_node)
-#    arcpy.Delete_management("Node_TV")
+    print("\nSpatial joining TAZ to Highway Nodes (this may take a few minutes)...")
+    gdf_taz = gpd.read_file(taz_shp)
+    gdf_nodes_nearest_taz = find_nearest_polygon(gdf_nodes,gdf_taz,1000)
+
+    # convert taz geodataframe to regular dataframe
+    df_taz = pd.DataFrame(gdf_taz).drop(columns={'geometry'}).rename(columns={'X':'X_1','Y':'Y_1', 'TAZID':'TAZID_1'})
+    gdf_node_taz_sj = gdf_nodes_nearest_taz.merge(df_taz, left_on='nearest_tazid',right_on='TAZID_1', how='left')
+    gdf_node_taz_sj = gdf_node_taz_sj.drop(columns={'nearest_tazid'})
+    gdf_node_taz_sj.to_file(node_taz_sj)
+     
+    print("\nUpdating Highway Node TAZID...\n")
+    gdf_node_mp = gdf_nodes_nearest_taz.copy()
+    gdf_node_mp['TAZID'] = gdf_node_mp.apply(lambda row: calcTAZID_Node(row['nearest_tazid'], row['N'], UsedZones), axis = 1)
+    gdf_node_mp = gdf_node_mp.drop(columns={'nearest_tazid'})
+    gdf_node_mp.to_file(out_node)
     
 
 
@@ -175,8 +181,8 @@ def Main():
     try:
         print("\n\nRunning script...")
         print("Start Time: " + time.strftime('%X %x %Z')+"\n")
-        TagLinksWithTAZID()
-        #TagNodesWithTAZID()
+        #TagLinksWithTAZID()
+        TagNodesWithTAZID()
         print("Script End Time: " + time.strftime('%X %x %Z'))
         logFile.write("All Finished"+"\n")
         logFile.write("Script End Time: " + time.strftime('%X %x %Z'))
