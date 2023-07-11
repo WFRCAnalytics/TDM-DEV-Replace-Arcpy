@@ -181,8 +181,8 @@ def Main():
     try:
         print("\n\nRunning script...")
         print("Start Time: " + time.strftime('%X %x %Z')+"\n")
-        #TagLinksWithTAZID()
-        TagNodesWithTAZID()
+        TagLinksWithTAZID()
+        #TagNodesWithTAZID()
         print("Script End Time: " + time.strftime('%X %x %Z'))
         logFile.write("All Finished"+"\n")
         logFile.write("Script End Time: " + time.strftime('%X %x %Z'))
