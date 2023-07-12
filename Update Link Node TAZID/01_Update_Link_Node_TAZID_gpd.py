@@ -26,7 +26,7 @@ TAZ_shp = r'inputs-04-14\\TAZ.shp'
 Scenario_Link = r'inputs-04-14\\C1_Link.shp'
 Scenario_Node = r'inputs-04-14\\C1_Node.shp'
 UsedZones = '3629'
-temp_folder = r'temp_gpd2'
+temp_folder = r'temp_gpd'
 log = os.path.join(temp_folder,r'LogFile_UpdateLinkNodeTAZID.txt')
 
 # Print key variabls to screen
@@ -45,7 +45,6 @@ logFile.write(str(UsedZones)+'\n')
 logFile.write(temp_folder+'\n')
 
 #raw_input()
-
 
 ## Define Variables
 # Variables: Input
@@ -79,36 +78,6 @@ def calcTAZID_Link(tazid, aField, bField, global_n):
     else:
         return tazid
 
-    
-def find_nearest_polygon(point_gdf, polygon_gdf,buffer_distance):
-    point_gdf2 = point_gdf.copy()
-    # Create a spatial index for the polygon geometries
-    polygon_sindex = polygon_gdf.sindex
-    
-    nearest_tazid = []
-    for point in point_gdf2.geometry:
-        # Get the indices of candidate polygons based on the point's bounding box
-        point_buffer = point.buffer(buffer_distance)
-        expanded_bounds = box(*point_buffer.bounds)
-        potential_nearest_idx = list(polygon_sindex.intersection(expanded_bounds.bounds))
-        
-        if len(potential_nearest_idx) > 0:
-            # Calculate distances only for the potential candidate polygons
-            distances = polygon_gdf.geometry.iloc[potential_nearest_idx].distance(point)
-            
-            # Find the index of the polygon with the minimum distance
-            nearest_idx = distances.idxmin()
-            
-            # Retrieve the corresponding 'TAZID' value
-            nearest_tazid.append(polygon_gdf.loc[nearest_idx, 'TAZID'])
-        else:
-            # Handle the case when there are no candidate polygons
-            nearest_tazid.append(None)
-            print('No TAZ polygon close enough to this link midpoint. Increase buffer size in code.')
-    
-    point_gdf2['nearest_tazid'] = nearest_tazid
-    return point_gdf2
-
 # Geoprocessing steps
 def TagLinksWithTAZID():
     print("\n\nImporting Highway Link data...")
@@ -129,30 +98,21 @@ def TagLinksWithTAZID():
     print("\nSpatial joining TAZ to Link midpoints (this may take a few minutes)...")
     # read in taz shapefile and calculate which tazes are closest to each midpoint value
     gdf_taz = gpd.read_file(taz_shp)
-    gdf_midpoints_nearest_taz = find_nearest_polygon(gdf_midpoints,gdf_taz,1000)
-    gdf_midpoints_nearest_taz = gdf_midpoints_nearest_taz[['LINKID','nearest_tazid']]
+    gdf_nearest = gpd.sjoin_nearest(gdf_midpoints,gdf_taz, distance_col = 'nearest_dist')
+
+    #drop duplicates where tazes are equidistant from the link midpoint by keeping the first occurence
+    second_occurences = gdf_nearest['LINKID'].duplicated(keep='first')
+    gdf_nearest_final = gdf_nearest[~second_occurences]
+    gdf_link_taz_sj = gdf_nearest_final.rename(columns={'TAZID_left':'TAZID','TAZID_right':'TAZID_1'})
+    gdf_link_taz_sj.to_file(link_taz_sj)
 
     drop_columns = ['TAZID_V832', 'SORT', 'CO_IDX', 'CO_TAZID', 'SUBAREAID', 'ACRES', 'DEVACRES', 'DEVPBLEPCT', 'X', 'Y', 'ADJ_XY', 'CO_FIPS', 'CO_NAME', 'CITY_FIPS', 'CITY_UGRC', 'CITY_NAME', 'DISTSUPER', 'DSUP_NAME', 'DISTLRG', 'DLRG_NAME', 'DISTMED', 'DMED_NAME', 'DISTSML', 'DSML_NAME', 'CBD', 'TERMTIME', 'PRKCSTPERM', 'PRKCSTTEMP', 'WALK100', 'ECOEDPASS', 'FREEFARE', 'REMM']
-
-    # get the tazid for all those midpoints that exist within a tazid
-    gdf_link_taz_sj = gpd.sjoin(gdf_midpoints, gdf_taz, how="left", op="within")
-    gdf_link_taz_sj = gdf_link_taz_sj.rename(columns={'TAZID_left':'TAZID','TAZID_right':'TAZID_1'})
-    gdf_link_taz_sj = gdf_link_taz_sj.drop(columns=drop_columns)
-
-    # update TAZID_1 to be the value of the nearest tazid to the midpoint for those midpoints that don't exist within a taz polygon
-    gdf_link_taz_sj_F = gdf_link_taz_sj.merge(gdf_midpoints_nearest_taz, on = 'LINKID', how = 'left')
-    gdf_link_taz_sj_F['TAZID_1'] = np.where(gdf_link_taz_sj_F['TAZID_1'].isna(), gdf_link_taz_sj_F['nearest_tazid'], gdf_link_taz_sj_F['TAZID_1'])
-
-    # get missing column data from taz dataframe
-    df_taz = pd.DataFrame(gdf_taz).drop(columns={'geometry'})
-    gdf_link_taz_sj_F = gdf_link_taz_sj_F.merge(df_taz, left_on='TAZID_1',right_on='TAZID', how='left')
-    gdf_link_taz_sj_F = gdf_link_taz_sj_F.rename(columns={'TAZID_x':'TAZID'}).drop(columns={'TAZID_y'})
-    gdf_link_taz_sj_F.to_file(link_taz_sj)
-
+    
     print("\nUpdating Highway Link TAZID...\n")
-    gdf_link_mp = gdf_link_taz_sj_F.copy()
+    gdf_link_mp = gdf_link_taz_sj.copy()
     gdf_link_mp["TAZID"] = gdf_link_mp.apply(lambda row: calcTAZID_Link(row["TAZID_1"], row["A"], row["B"], UsedZones), axis=1)
-    gdf_link_mp = gdf_link_mp.drop(columns=drop_columns).drop(columns={'nearest_tazid','TAZID_1'})
+    gdf_link_mp = gdf_link_mp.drop(columns=drop_columns).drop(columns={'nearest_dist','TAZID_1'})
+    gdf_link_mp = gdf_link_mp.sort_values(by='LINKID', ascending=True)
     gdf_link_mp.to_file(out_link)
 
 def TagNodesWithTAZID():
@@ -160,19 +120,21 @@ def TagNodesWithTAZID():
     gdf_nodes = gpd.read_file(node_shp)
 
     print("\nSpatial joining TAZ to Highway Nodes (this may take a few minutes)...")
+    # read in taz shapefile and calculate which tazes are closest to each midpoint value
     gdf_taz = gpd.read_file(taz_shp)
-    gdf_nodes_nearest_taz = find_nearest_polygon(gdf_nodes,gdf_taz,1000)
+    gdf_nodes_nearest_taz = gpd.sjoin_nearest(gdf_nodes,gdf_taz, distance_col = 'nearest_dist')
 
-    # convert taz geodataframe to regular dataframe
-    df_taz = pd.DataFrame(gdf_taz).drop(columns={'geometry'}).rename(columns={'X':'X_1','Y':'Y_1', 'TAZID':'TAZID_1'})
-    gdf_node_taz_sj = gdf_nodes_nearest_taz.merge(df_taz, left_on='nearest_tazid',right_on='TAZID_1', how='left')
-    gdf_node_taz_sj = gdf_node_taz_sj.drop(columns={'nearest_tazid'})
+    #drop duplicates where tazes are equidistant from the link midpoint by keeping the first occurence
+    second_node_occurences = gdf_nodes_nearest_taz['N'].duplicated(keep='first')
+    gdf_node_nearest_final = gdf_nodes_nearest_taz[~second_node_occurences]
+    gdf_node_taz_sj = gdf_node_nearest_final.rename(columns={'X_left':'X','Y_left':'Y','TAZID_left':'TAZID','TAZID_right':'TAZID_1','X_right':'X_1','Y_right':'Y_1'})
+    gdf_node_taz_sj = gdf_node_taz_sj.drop(columns={'nearest_dist'})
     gdf_node_taz_sj.to_file(node_taz_sj)
      
     print("\nUpdating Highway Node TAZID...\n")
-    gdf_node_mp = gdf_nodes_nearest_taz.copy()
-    gdf_node_mp['TAZID'] = gdf_node_mp.apply(lambda row: calcTAZID_Node(row['nearest_tazid'], row['N'], UsedZones), axis = 1)
-    gdf_node_mp = gdf_node_mp.drop(columns={'nearest_tazid'})
+    gdf_node_mp = gdf_node_taz_sj.copy()
+    gdf_node_mp['TAZID'] = gdf_node_mp.apply(lambda row: calcTAZID_Node(row['TAZID_1'], row['N'], UsedZones), axis = 1)
+    gdf_node_mp = gdf_node_mp.iloc[:,:43]
     gdf_node_mp.to_file(out_node)
     
 
@@ -182,7 +144,7 @@ def Main():
         print("\n\nRunning script...")
         print("Start Time: " + time.strftime('%X %x %Z')+"\n")
         TagLinksWithTAZID()
-        #TagNodesWithTAZID()
+        TagNodesWithTAZID()
         print("Script End Time: " + time.strftime('%X %x %Z'))
         logFile.write("All Finished"+"\n")
         logFile.write("Script End Time: " + time.strftime('%X %x %Z'))
