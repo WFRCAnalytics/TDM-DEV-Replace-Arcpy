@@ -1,0 +1,7 @@
+D:\GitHub\WF-TDM-v9.0\1_Inputs\3_Highway\GIS\Tollz_shp.shp
+D:\GitHub\WF-TDM-v9.0\Scenarios\WF TDM v9.0 - 2023-04-14\BY_2019\Temp\0_InputProcessing\C2_Link.shp
+D:\GitHub\WF-TDM-v9.0\Scenarios\WF TDM v9.0 - 2023-04-14\BY_2019\Temp\0_InputProcessing\C2_Node.shp
+3629
+All Finished
+Script Start Time: 10:40:43 07/19/23 Mountain Daylight Time
+Script End Time: 10:41:18 07/19/23 Mountain Daylight Time

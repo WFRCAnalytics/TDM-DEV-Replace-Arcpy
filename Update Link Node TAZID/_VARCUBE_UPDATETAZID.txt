@@ -1,10 +1,10 @@
 #Python input file variables and paths
-TAZ_shp           = r"D:GitHub\WF-TDM-v9.0\1_Inputs\1_TAZ\TAZ.dbf"
+TAZ_shp           = r"D:\GitHub\WF-TDM-v9.0\1_Inputs\1_TAZ\TAZ.dbf"
 
-Scenario_Link     = r"D:GitHub\WF-TDM-v9.0\Scenarios\WF TDM v9.0 - 2023-04-14\BY_2019\Temp\0_InputProcessing\C1_Link.shp"
-Scenario_Node     = r"D:GitHub\WF-TDM-v9.0\Scenarios\WF TDM v9.0 - 2023-04-14\BY_2019\Temp\0_InputProcessing\C1_Node.shp"
+Scenario_Link     = r"D:\GitHub\WF-TDM-v9.0\Scenarios\WF TDM v9.0 - 2023-04-14\BY_2019\Temp\0_InputProcessing\C1_Link.shp"
+Scenario_Node     = r"D:\GitHub\WF-TDM-v9.0\Scenarios\WF TDM v9.0 - 2023-04-14\BY_2019\Temp\0_InputProcessing\C1_Node.shp"
 
 UsedZones         = 3629
 
-temp_folder       = r"D:GitHub\WF-TDM-v9.0\Scenarios\WF TDM v9.0 - 2023-04-14\BY_2019\Temp\0_InputProcessing"
+temp_folder       = r"D:\GitHub\WF-TDM-v9.0\Scenarios\WF TDM v9.0 - 2023-04-14\BY_2019\Temp\0_InputProcessing"
 
