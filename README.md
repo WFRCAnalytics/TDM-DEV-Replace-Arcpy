@@ -3,9 +3,7 @@ Test geoprocessing capabilities and ease of installation of various open source 
 [Google Doc](https://docs.google.com/document/d/16XUgkz5OroLOAmgGHT_PwiNV_CMalpZPnYkRi0-Dsyg/edit#)
 
 
-Python Specs:
-total size: 282mb
-python version: 3.11.4
-geopandas: 0.13.2
-numpy: 1.24.3 (included)
-pandas:2.0.3 (included)
+Python Specs:  
+total size: 282mb  
+python version: 3.11.4  
+geopandas: 0.13.2  
