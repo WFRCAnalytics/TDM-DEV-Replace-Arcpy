@@ -4,6 +4,6 @@ Test geoprocessing capabilities and ease of installation of various open source 
 
 
 Python Specs:  
-total size: 282mb  
-python version: 3.11.4  
-geopandas: 0.13.2  
+- total size: 282mb  
+- python version: 3.11.4  
+- geopandas: 0.13.2  
