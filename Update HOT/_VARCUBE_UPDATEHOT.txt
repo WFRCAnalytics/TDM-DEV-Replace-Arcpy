@@ -1,8 +1,8 @@
 #Python input file variables and paths
 tollz_shp         = r"D:\GitHub\WF-TDM-v9x\1_Inputs\3_Highway\GIS\Tollz_shp.shp"
-Scenario_Link     = r"D:\GitHub\WF-TDM-v9x\Scenarios\WF TDM v9.0 - 2023-04-14\BY_2019\Temp\0_InputProcessing\C2_Link.shp"
-Scenario_Node     = r"D:\GitHub\WF-TDM-v9x\Scenarios\WF TDM v9.0 - 2023-04-14\BY_2019\Temp\0_InputProcessing\C2_Node.shp"
+Scenario_Link     = r"D:\GitHub\WF-TDM-v9x\Scenarios\WF TDM v9.0 - 2023-07-21 - geopandas\BY_2019\Temp\0_InputProcessing\C2_Link.shp"
+Scenario_Node     = r"D:\GitHub\WF-TDM-v9x\Scenarios\WF TDM v9.0 - 2023-07-21 - geopandas\BY_2019\Temp\0_InputProcessing\C2_Node.shp"
 UsedZones         = 3629
 
-temp_folder       = r"D:\GitHub\WF-TDM-v9x\Scenarios\WF TDM v9.0 - 2023-04-14\BY_2019\Temp\0_InputProcessing"
+temp_folder       = r"D:\GitHub\WF-TDM-v9x\Scenarios\WF TDM v9.0 - 2023-07-21 - geopandas\BY_2019\Temp\0_InputProcessing"
 

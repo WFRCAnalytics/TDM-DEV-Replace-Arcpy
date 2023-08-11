@@ -8,13 +8,13 @@
 #
 # Requires:    Geopandas, Pandas
 
-# open cmd in this folder and run this command: C:\Users\cday\Anaconda3\python.exe 01_Update_HOT_gpd.py
 #C:\Users\cday\AppData\Local\ESRI\conda\envs\arcgispro-py3-geopandas\python.exe 01_Update_HOT_gpd.py
 
 print("\nRunning Update HOTzone Python Script\n\n\n")
 
 import sys, os, imp, time, traceback
 import geopandas as gpd
+import pandas as pd
 from pandas.api.types import is_numeric_dtype
 import importlib.machinery
 
@@ -52,14 +52,9 @@ node_shp          = str(data.Scenario_Node)
 UsedZones         = str(data.UsedZones)
 temp_folder       = str(data.temp_folder)
 
-# Variables: Intermediate
-link_taz_sj       = os.path.join(temp_folder, "Link_TAZ_SJ_deleteTemp.shp")
-node_taz_sj       = os.path.join(temp_folder, "Node_TAZ_SJ_deleteTemp.shp")
-
 # Variables: Output
-out_link         = os.path.join(temp_folder, "C1_Link_HOT.shp")
-out_node         = os.path.join(temp_folder, "C1_Node_HOT.shp")
-out_link_mp      = os.path.join(temp_folder, "C1_Link_Midponts.shp")
+out_link         = os.path.join(temp_folder, "C1_Link_HOT.csv")
+out_node         = os.path.join(temp_folder, "C1_Node_HOT.csv")
 
 
 # Codeblock to calculate HOTzone node value
@@ -112,13 +107,11 @@ def Main():
         gdf_midpoints = gdf_link.copy()
         gdf_midpoints = gdf_midpoints.set_geometry(gdf_midpoints.geometry.centroid)
         gdf_midpoints = fill_na_sedf(gdf_midpoints)
-        gdf_midpoints.to_file(out_link_mp)
 
         print("\nSpatial joining Tollz_shp to Link midpoints (this may take a few minutes)...")
         gdf_tollz = gpd.read_file(tollz_shp)
         gdf_link_taz_sj = gpd.sjoin(gdf_midpoints, gdf_tollz, how="left", op="within")
         gdf_link_taz_sj = fill_na_sedf(gdf_link_taz_sj)
-        gdf_link_taz_sj.to_file(link_taz_sj)    
 
         print("\nUpdating Highway Link HOTZONE ID...\n")
         df_link_taz_sf = gdf_link_taz_sj[['LINKID','EL_Zone']]
@@ -126,7 +119,11 @@ def Main():
         gdf_link_join["HOT_ZONEID"] = gdf_link_join["EL_Zone"]
         gdf_link_join = gdf_link_join.drop(columns='EL_Zone', axis=1)
         gdf_link_join = fill_na_sedf(gdf_link_join)
-        gdf_link_join.to_file(out_link)
+        gdf_link_join = gdf_link_join[['A','B','LINKID','HOT_ZONEID', 'geometry']]
+
+        #save output as csv
+        df_link_join = pd.DataFrame(gdf_link_join.drop(columns='geometry'))
+        df_link_join.to_csv(out_link, index=False)
 
         #===============================
         # Tag Nodes With Toll Zone ID
@@ -140,14 +137,15 @@ def Main():
         gdf_node_tollz = gpd.sjoin(gdf_node,gdf_tollz, how="left", op="within") 
 
         print("\nUpdating Highway Node TollzoneID...\n")
-        gdf_node_taz_sj = fill_na_sedf(gdf_node_tollz)
-        gdf_node_taz_sj.to_file(node_taz_sj)    
-
         gdf_node_taz_hot = gdf_node_tollz.copy()
         gdf_node_taz_hot["HOT_ZONEID"] = gdf_node_taz_hot.apply(lambda row: calctollzoneID_Node(row["EL_Zone"], row["N"], UsedZones), axis=1) 
         gdf_node_taz_hot = gdf_node_taz_hot.drop(columns={'index_right','OBJECTID', 'Name', 'EL_Zone', 'Shape_Leng', 'Shape_Area'})
         gdf_node_taz_hot = fill_na_sedf(gdf_node_taz_hot)
-        gdf_node_taz_hot.to_file(out_node) 
+        gdf_node_taz_hot = gdf_node_taz_hot[['N','X','Y','HOT_ZONEID', 'geometry']]
+
+        #save output as csv
+        df_node_join = pd.DataFrame(gdf_node_taz_hot.drop(columns='geometry'))
+        df_node_join.to_csv(out_node, index=False)
 
         #===============
         # Finish Script

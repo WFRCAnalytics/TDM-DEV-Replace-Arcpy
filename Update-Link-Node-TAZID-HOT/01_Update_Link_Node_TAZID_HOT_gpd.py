@@ -174,10 +174,16 @@ def Main():
         gdf_link_join = fill_na_sedf(gdf_link_join)
         gdf_link_join = gdf_link_join[['LINKID','HOT_ZONEID', 'geometry']]
 
+        #select only freeway and ramp links
+        print("\n\nImporting Highway Link data...\n")
+        gdf_link_hot = gpd.read_file(Scenario_Link_HOT)
+        hot_link_ids = gdf_link_hot['LINKID'].unique()
+        hot_link_join = gdf_link_join[gdf_link_join['LINKID'].isin(hot_link_ids)]
+
         #save output as csv
         df_link_mp = pd.DataFrame(gdf_link_mp.drop(columns='geometry'))
-        df_link_join = pd.DataFrame(gdf_link_join.drop(columns='geometry'))
-        df_link_mp_hot = df_link_mp.merge(df_link_join, on='LINKID', how='left')
+        df_link_join = pd.DataFrame(hot_link_join.drop(columns='geometry'))
+        df_link_mp_hot = df_link_mp.merge(df_link_join, on='LINKID', how='left').fillna(0)
         df_link_mp_hot.to_csv(out_link, index=False)
 
         #=====================

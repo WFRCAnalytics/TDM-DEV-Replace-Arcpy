@@ -1,7 +1,7 @@
-D:\GitHub\WF-TDM-v9.0\1_Inputs\1_TAZ\TAZ.dbf
-D:\GitHub\WF-TDM-v9.0\Scenarios\WF TDM v9.0 - 2023-04-14\BY_2019\Temp\0_InputProcessing\C1_Link.shp
-D:\GitHub\WF-TDM-v9.0\Scenarios\WF TDM v9.0 - 2023-04-14\BY_2019\Temp\0_InputProcessing\C1_Node.shp
+D:\GitHub\WF-TDM-v9x\1_Inputs\1_TAZ\TAZ.dbf
+D:\GitHub\WF-TDM-v9x\Scenarios\WF TDM v9.0 - 2023-07-21 - geopandas\BY_2019\Temp\0_InputProcessing\C1_Link.shp
+D:\GitHub\WF-TDM-v9x\Scenarios\WF TDM v9.0 - 2023-07-21 - geopandas\BY_2019\Temp\0_InputProcessing\C1_Node.shp
 3629
 All Finished
-Script Start Time: 10:26:19 07/19/23 Mountain Daylight Time
-Script End Time: 10:36:47 07/19/23 Mountain Daylight Time
+Script Start Time: 10:18:11 08/11/23 Mountain Daylight Time
+Script End Time: 10:18:22 08/11/23 Mountain Daylight Time
