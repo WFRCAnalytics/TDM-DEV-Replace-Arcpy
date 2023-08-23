@@ -7,6 +7,8 @@
 #
 # Requires:    Geopandas, Pandas
 
+#C:\Users\cday\AppData\Local\ESRI\conda\envs\arcgispro-py3-geopandas\python.exe 02_CreateWalkBuffer.py
+
 print("\nRunning Create Walk Buffer Python Script\n\n\n") 
 
 import sys, os, imp, time, traceback
@@ -57,6 +59,7 @@ temp_taz = os.path.join(temp_folder, "Walk_Buffer_TAZ.shp")
 def Main():
     try:
         print("\n\nRunning script...")
+        starttime = time.strftime('%X %x %Z')
         print("Start Time: " + time.strftime('%X %x %Z')+"\n")
 
         #=================
@@ -168,10 +171,10 @@ def Main():
         taz_df.loc[taz_df['MAX_F_AREA'] <= 0 ,'LOCALAREA'] = taz_df['LOCALAREA']
         del taz_df['MAX_F_AREA']
 
-        lbl_buffer.to_file(os.path.join(temp_folder, "wb_elseBusLines_Buffer.shp"))
-        BusLines_TAZ_Intersect.to_file(os.path.join(temp_folder, "wb_BusLines_TAZ_Intersect.shp"))
-        BusLines_Dissolve.to_file(os.path.join(temp_folder, "wb_BusLines_Dissolve.shp"))
-        BusLines_Area.to_file(os.path.join(temp_folder, "wb_BusLines_Area.shp"))
+        #lbl_buffer.to_file(os.path.join(temp_folder, "wb1_elseBusLines_Buffer.shp"))
+        #BusLines_TAZ_Intersect.to_file(os.path.join(temp_folder, "wb1_BusLines_TAZ_Intersect.shp"))
+        #BusLines_Dissolve.to_file(os.path.join(temp_folder, "wb1_BusLines_Dissolve.shp"))
+        #BusLines_Area.to_file(os.path.join(temp_folder, "wb1_BusLines_Area.shp"))
 
         delete_files.append(lbl_buffer)
         delete_files.append(BusLines_TAZ_Intersect)
@@ -208,10 +211,10 @@ def Main():
         taz_df.loc[taz_df['MAX_F_AREA'] <= 0 ,'STOPSAREA'] = taz_df['STOPSAREA']
         del taz_df['MAX_F_AREA']
 
-        lbs_buffer.to_file(os.path.join(temp_folder, "wb_BusStops_Buffer.shp"))
-        BusStops_TAZ_Intersect.to_file(os.path.join(temp_folder, "wb_BusStops_TAZ_Intersect.shp"))
-        BusStops_Dissolve.to_file(os.path.join(temp_folder, "wb_BusStops_Dissolve.shp"))
-        BusStops_Area.to_file(os.path.join(temp_folder, "wb_BusStops_Area.shp"))
+        #lbs_buffer.to_file(os.path.join(temp_folder, "wb1_BusStops_Buffer.shp"))
+        #BusStops_TAZ_Intersect.to_file(os.path.join(temp_folder, "wb1_BusStops_TAZ_Intersect.shp"))
+        #BusStops_Dissolve.to_file(os.path.join(temp_folder, "wb1_BusStops_Dissolve.shp"))
+        #BusStops_Area.to_file(os.path.join(temp_folder, "wb1_BusStops_Area.shp"))
         
         delete_files.append(lbs_buffer)
         delete_files.append(BusStops_TAZ_Intersect)
@@ -255,14 +258,16 @@ def Main():
             except:
                  pass
 
-        taz_df.to_file(os.path.join(temp_folder, "Walk_Buffer_TAZ.shp"))
-        Local_Bus_Lines.to_file(os.path.join(temp_folder, "wb_LocalBus.shp"))
-        Local_Bus_Stops.to_file(os.path.join(temp_folder, "wb_Stops.shp"))
+        taz_df.to_file(os.path.join(temp_folder, "Walk_Buffer_TAZ2.shp"))
+        #Local_Bus_Lines.to_file(os.path.join(temp_folder, "wb1_LocalBus.shp"))
+        #Local_Bus_Stops.to_file(os.path.join(temp_folder, "wb1_Stops.shp"))
         del taz_df
 
         print ("All Finished"+"\n")
+        print("Script Start Time: " + starttime +"\n")
         print ("Script End Time: " + time.strftime('%X %x %Z'))
         logFile.write("All Finished"+"\n")
+        logFile.write("Script Start Time: " + starttime +"\n")
         logFile.write("Script End Time: " + time.strftime('%X %x %Z'))
         logFile.close()
 

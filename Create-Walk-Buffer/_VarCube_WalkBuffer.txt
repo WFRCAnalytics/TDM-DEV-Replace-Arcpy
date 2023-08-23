@@ -1,0 +1,7 @@
+#Python input file variables and paths
+TAZ_shp         = r"D:\GitHub\WF-TDM-v9x\1_Inputs\1_TAZ\TAZ.dbf"
+Scenario_Link     = r"D:\GitHub\WF-TDM-v9x\Scenarios\WF TDM v9.0 - 2023-07-21 - geopandas\BY_2019\0_InputProcessing\v9_SE19_Net19_Link1.shp"
+Scenario_Node     = r"D:\GitHub\WF-TDM-v9x\Scenarios\WF TDM v9.0 - 2023-07-21 - geopandas\BY_2019\0_InputProcessing\v9_SE19_Net19_Node1.shp"
+
+temp_folder       = r"D:\GitHub\WF-TDM-v9x\Scenarios\WF TDM v9.0 - 2023-07-21 - geopandas\BY_2019\Temp2\0_InputProcessing"
+
