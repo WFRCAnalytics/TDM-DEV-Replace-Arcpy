@@ -10,7 +10,7 @@
 
 #C:\Users\cday\AppData\Local\ESRI\conda\envs\arcgispro-py3-geopandas\python.exe 01_Update_Link_Node_TAZID_gpd.py
 
-print("\nRunning Update HOTzone Python Script\n\n\n")
+print("\nRunning Update Link Node TAZID Python Script\n\n\n")
 
 import sys, os, imp, time, traceback
 import pandas as pd
@@ -113,7 +113,8 @@ def Main():
         gdf_link_mp["TAZID"] = gdf_link_mp.apply(lambda row: calcTAZID_Link(row["TAZID_1"], row["A"], row["B"], UsedZones), axis=1)
         gdf_link_mp = gdf_link_mp.drop(columns=drop_columns).drop(columns={'nearest_dist','TAZID_1'})
         gdf_link_mp = gdf_link_mp.sort_values(by='LINKID', ascending=True)
-        gdf_link_mp = gdf_link_mp[['A','B','LINKID','DISTANCE','TAZID','geometry']]
+        gdf_link_mp = gdf_link_mp.rename(columns={'A':';A'})
+        gdf_link_mp = gdf_link_mp[[';A','B','LINKID','DISTANCE','TAZID','geometry']]
 
         df_link_mp = pd.DataFrame(gdf_link_mp.drop(columns='geometry'))
         df_link_mp.to_csv(out_link, index=False)
@@ -140,7 +141,8 @@ def Main():
         gdf_node_mp = gdf_node_taz_sj.copy()
         gdf_node_mp['TAZID'] = gdf_node_mp.apply(lambda row: calcTAZID_Node(row['TAZID_1'], row['N'], UsedZones), axis = 1)
         gdf_node_mp = gdf_node_mp.iloc[:,:43]
-        gdf_node_mp = gdf_node_mp[['N','X','Y','TAZID','geometry']]
+        gdf_node_mp = gdf_node_mp.rename(columns={'N':';N'})
+        gdf_node_mp = gdf_node_mp[[';N','X','Y','TAZID','geometry']]
 
         #save output as csv
         df_node_mp = pd.DataFrame(gdf_node_mp.drop(columns='geometry'))

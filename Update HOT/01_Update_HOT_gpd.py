@@ -119,7 +119,8 @@ def Main():
         gdf_link_join["HOT_ZONEID"] = gdf_link_join["EL_Zone"]
         gdf_link_join = gdf_link_join.drop(columns='EL_Zone', axis=1)
         gdf_link_join = fill_na_sedf(gdf_link_join)
-        gdf_link_join = gdf_link_join[['A','B','LINKID','HOT_ZONEID', 'geometry']]
+        gdf_link_join = gdf_link_join.rename(columns={'A':';A'})
+        gdf_link_join = gdf_link_join[[';A','B','LINKID','HOT_ZONEID', 'geometry']]
 
         #save output as csv
         df_link_join = pd.DataFrame(gdf_link_join.drop(columns='geometry'))
@@ -141,7 +142,8 @@ def Main():
         gdf_node_taz_hot["HOT_ZONEID"] = gdf_node_taz_hot.apply(lambda row: calctollzoneID_Node(row["EL_Zone"], row["N"], UsedZones), axis=1) 
         gdf_node_taz_hot = gdf_node_taz_hot.drop(columns={'index_right','OBJECTID', 'Name', 'EL_Zone', 'Shape_Leng', 'Shape_Area'})
         gdf_node_taz_hot = fill_na_sedf(gdf_node_taz_hot)
-        gdf_node_taz_hot = gdf_node_taz_hot[['N','X','Y','HOT_ZONEID', 'geometry']]
+        gdf_node_taz_hot = gdf_node_taz_hot.rename(columns={'N':';N'})
+        gdf_node_taz_hot = gdf_node_taz_hot[[';N','X','Y','HOT_ZONEID', 'geometry']]
 
         #save output as csv
         df_node_join = pd.DataFrame(gdf_node_taz_hot.drop(columns='geometry'))
